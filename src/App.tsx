@@ -1,26 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import TodoListIntro from "./components/TodoListIntro/TodoListIntro";
+import { ApolloProvider } from "@apollo/react-hooks";
+import { client } from "./graphql/graphqlClient";
+import TodoList from "./components/TodoList/TodoList";
 
-const App: React.FC = () => {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <ApolloProvider client={client}>
+        <Switch>
+          <Route exact path="/">
+            <TodoListIntro text="hello" />
+          </Route>
+          <Route path="/:todoListId">
+            <TodoList />
+          </Route>
+        </Switch>
+      </ApolloProvider>
+    </Router>
   );
 }
-
-export default App;
