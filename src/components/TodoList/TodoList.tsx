@@ -1,27 +1,15 @@
-import React, { FormEvent, useState, SyntheticEvent } from "react";
-import { useMutation, useQuery } from "@apollo/react-hooks";
-import { CREATE_TODO } from "../../graphql/mutations";
-import styled from "styled-components";
+import React, { useState } from "react";
 import {
-  Container,
-  Segment,
-  Header,
-  Button,
-  Icon,
-  Input,
-  Form,
-  Checkbox
-} from "semantic-ui-react";
+  useMutation,
+  useQuery,
+  MutationHookOptions
+} from "@apollo/react-hooks";
+import { CREATE_TODO } from "../../graphql/mutations";
+import { Container, Form } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { GET_TODO_LIST } from "../../graphql/queries";
 import Todo from "../todo/Todo";
 
-// const Container = styled.div`
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   flex-direction: column;
-// `;
 interface Todo {
   id: string;
   description: string;
@@ -39,26 +27,21 @@ interface Params {
 const TodoList: React.FC = () => {
   const { todoListId } = useParams<Params>();
 
-  const { loading, error, data, refetch: refetchTodoList } = useQuery(
-    GET_TODO_LIST,
-    {
-      variables: { todoListId },
-      // pollInterval: 500
-    }
-  );
+  const { data } = useQuery(GET_TODO_LIST, {
+    variables: { todoListId }
+  });
   console.log(data);
   const [createTodo] = useMutation(CREATE_TODO);
   const [description, setDescription] = useState("");
 
   return (
     <Container textAlign="center" style={{ margin: 20 }}>
-      {renderTodos(data, refetchTodoList)}
+      {renderTodos(data)}
       <Form
         onSubmit={handleOnSubmit(
           createTodo,
           todoListId,
           description,
-          refetchTodoList,
           setDescription
         )}
       >
@@ -73,13 +56,18 @@ const TodoList: React.FC = () => {
   );
 };
 
-const renderTodos = (data: any, refetchTodoList: Function) => {
+const renderTodos = (data: any) => {
   if (data) {
     const todos = data.getTodoList && data.getTodoList.todos;
     return (
       <>
         {todos.map((todo: Todo, index: number) => (
-          <Todo key={index} id={todo.id} description={todo.description} complete={todo.complete} refetchTodoList={refetchTodoList}/>
+          <Todo
+            key={index}
+            id={todo.id}
+            description={todo.description}
+            complete={todo.complete}
+          />
         ))}
       </>
     );
@@ -99,13 +87,15 @@ const handleOnSubmit = (
   createTodo: Function,
   todoListId: string,
   description: string,
-  refetchTodoList: Function,
   setDescription: Function
 ) => (e: any) => {
   e.preventDefault();
-  console.log(e);
-  createTodo({ variables: { todoListId, description } });
-  refetchTodoList();
+  const options: MutationHookOptions = {
+    variables: { todoListId, description },
+    refetchQueries: ["GET_TODO_LIST"]
+  };
+
+  createTodo(options);
   setDescription("");
 };
 

@@ -12,3 +12,16 @@ export const GET_TODO_LIST = gql`
       }
    }
 `
+
+export const GET_TODO_LIST_CACHE = gql`
+   query GET_TODO_LIST($todoListId: ID!) {
+      getTodoList(id: $todoListId) {
+         id
+         todos {
+            id
+            description
+            complete @client
+         }
+      }
+   }
+`
